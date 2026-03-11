@@ -1,0 +1,25 @@
+{
+  "name": "create-claude-config",
+  "version": "1.0.0",
+  "description": "Interactive CLI wizard to scaffold optimized Claude Code configuration",
+  "keywords": ["claude", "claude-code", "ai", "scaffolding", "config", "create"],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-claude-config": "./bin/create-claude-config.js"
+  },
+  "files": [
+    "bin/",
+    "src/"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node bin/create-claude-config.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0"
+  }
+}
