@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { stat, rename } from 'node:fs/promises';
 import { writeFileSafe, ensureDir } from './utils/fs.js';
 
 // CLAUDE.md section templates
@@ -17,6 +18,47 @@ import { buildFixIssueSkill } from './templates/skills/fix-issue.js';
 import { buildReviewPrSkill } from './templates/skills/review-pr.js';
 import { buildTestingRules } from './templates/rules/testing.js';
 import { buildNamingRules } from './templates/rules/naming.js';
+
+/**
+ * Check for existing Claude Code config files that would be overwritten
+ */
+export async function detectExistingConfig(outputDir) {
+  const filesToCheck = [
+    join(outputDir, '.claude', 'CLAUDE.md'),
+    join(outputDir, '.claude', 'settings.json'),
+    join(outputDir, '.claude', 'SETUP-GUIDE.md'),
+    join(outputDir, 'CLAUDE.md'),
+  ];
+
+  const existing = [];
+  for (const filePath of filesToCheck) {
+    try {
+      await stat(filePath);
+      existing.push(filePath.replace(outputDir + '\\', '').replace(outputDir + '/', ''));
+    } catch {
+      // File doesn't exist — safe to create
+    }
+  }
+
+  return existing;
+}
+
+/**
+ * Back up existing .claude/ directory by renaming it with a timestamp
+ */
+export async function backupExistingConfig(outputDir) {
+  const claudeDir = join(outputDir, '.claude');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const backupDir = join(outputDir, `.claude-backup-${timestamp}`);
+
+  try {
+    await stat(claudeDir);
+    await rename(claudeDir, backupDir);
+    return backupDir;
+  } catch {
+    return null;
+  }
+}
 
 export async function generate(ctx, outputDir) {
   const claudeDir = join(outputDir, '.claude');
